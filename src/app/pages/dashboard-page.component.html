@@ -1,0 +1,77 @@
+<div class="dashboard fade-in">
+  <div class="dash-header">
+    <div>
+      <h1 class="dash-title">DASHBOARD</h1>
+      <p class="dash-subtitle">Welcome back, <span class="highlight">{{ auth.user() }}</span></p>
+    </div>
+    <a routerLink="/calculator" class="cta-btn">
+      New Calculation <span>→</span>
+    </a>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="stats-grid">
+    <div class="stat-card stat-total">
+      <div class="stat-label">TOTAL OPERATIONS</div>
+      <div class="stat-value">{{ loading ? '—' : totalOps() }}</div>
+      <div class="stat-bar"></div>
+    </div>
+    @for (op of ops; track op) {
+      <div class="stat-card" [style.--op-color]="opColors[op]">
+        <div class="stat-op-icon">{{ opIcons[op] }}</div>
+        <div class="stat-label">{{ op.toUpperCase() }}</div>
+        <div class="stat-value" [style.color]="opColors[op]">
+          {{ loading ? '—' : (counts[op] || 0) }}
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section-title">QUICK ACTIONS</div>
+  <div class="quick-actions">
+    @for (a of quickActions; track a.label) {
+      <a [routerLink]="a.path" class="quick-card">
+        <span class="quick-icon">{{ a.icon }}</span>
+        <span class="quick-label">{{ a.label }}</span>
+        <span class="quick-arrow">→</span>
+      </a>
+    }
+  </div>
+
+  <!-- Recent history -->
+  <div class="section-title">RECENT OPERATIONS</div>
+  @if (loading) {
+    <div class="loading-bar"></div>
+  } @else if (recentHistory.length === 0) {
+    <div class="empty-state">
+      No operations yet. <a routerLink="/calculator">Start calculating →</a>
+    </div>
+  } @else {
+    <div class="history-list">
+      @for (item of recentHistory; track item.id) {
+        <div class="history-row" [class.error]="item.error">
+          <span class="history-op" [style.color]="opColors[item.operation.toLowerCase()]">
+            {{ opIcons[item.operation.toLowerCase()] }} {{ item.operation }}
+          </span>
+          <span class="history-detail">
+            {{ item.thisValue }} {{ item.thisUnit }}
+            @if (item.thatValue != null && item.thatValue !== 0) {
+              &amp; {{ item.thatValue }} {{ item.thatUnit }}
+            }
+          </span>
+          <span class="history-result">
+            @if (item.error) {
+              <span class="err-tag">ERR</span>
+            } @else {
+              {{ item.resultString }}
+            }
+          </span>
+          <span class="history-time">
+            {{ formatTime(item.createdAt) }}
+          </span>
+        </div>
+      }
+    </div>
+  }
+</div>

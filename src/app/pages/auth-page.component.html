@@ -1,0 +1,69 @@
+<div class="auth-root">
+  <!-- Decorative blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="auth-card fade-in">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <span class="auth-logo-icon">⊕</span>
+        <span class="auth-logo-text">QUANTI<span>MEASURE</span></span>
+      </div>
+      <h1 class="auth-title">{{ isLogin() ? 'SIGN IN' : 'CREATE ACCOUNT' }}</h1>
+      <p class="auth-subtitle">
+        {{ isLogin() ? 'Access your measurement workspace' : 'Join and start measuring' }}
+      </p>
+    </div>
+
+    @if (auth.error()) {
+      <div class="auth-error">
+        <span>⚠</span> {{ auth.error() }}
+      </div>
+    }
+
+    <form class="auth-form" (ngSubmit)="submit()">
+      <div class="field-group">
+        <label class="field-label">USERNAME</label>
+        <input
+          class="field-input"
+          type="text"
+          [(ngModel)]="username"
+          name="username"
+          placeholder="your_username"
+          required
+          autocomplete="username"
+          autofocus
+        />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">PASSWORD</label>
+        <input
+          class="field-input"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required
+          [autocomplete]="isLogin() ? 'current-password' : 'new-password'"
+        />
+      </div>
+
+      <button class="auth-submit" type="submit" [disabled]="auth.loading()">
+        @if (auth.loading()) {
+          <span class="spinner"></span>
+        } @else {
+          {{ isLogin() ? 'SIGN IN' : 'CREATE ACCOUNT' }} <span>→</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-switch">
+      @if (isLogin()) {
+        Don't have an account? <a routerLink="/register">Register →</a>
+      } @else {
+        Already have an account? <a routerLink="/login">Sign in →</a>
+      }
+    </div>
+  </div>
+</div>
