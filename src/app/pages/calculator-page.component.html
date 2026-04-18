@@ -1,0 +1,185 @@
+<div class="calc-page fade-in">
+  <div class="calc-header">
+    <h1 class="calc-title">CALCULATOR</h1>
+    <p class="calc-subtitle">Perform quantity operations with precision</p>
+  </div>
+
+  <div class="calc-layout">
+    <!-- Left: operation & type selectors -->
+    <aside class="calc-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">OPERATION</div>
+        @for (op of operations; track op.id) {
+          <button
+            class="op-btn"
+            [class.active]="operation === op.id"
+            [style.--c]="opColors[op.id]"
+            (click)="handleOperationChange(op.id)"
+          >
+            <span class="op-icon">{{ op.icon }}</span>
+            <div>
+              <div class="op-name">{{ op.label }}</div>
+              <div class="op-desc">{{ op.desc }}</div>
+            </div>
+          </button>
+        }
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">MEASUREMENT TYPE</div>
+        @for (t of types; track t) {
+          <button
+            class="type-btn"
+            [class.active]="type === t"
+            (click)="handleTypeChange(t)"
+          >
+            <span class="type-icon">{{ typeIcons[t] }}</span>
+            {{ t.toUpperCase() }}
+          </button>
+        }
+      </div>
+    </aside>
+
+    <!-- Right: form -->
+    <div class="calc-main">
+      <div class="calc-card">
+        <div class="calc-card-header" [style.--c]="opColors[operation]">
+          <span class="card-op-icon">{{ opInfo?.icon }}</span>
+          <div>
+            <div class="card-op-name">{{ opInfo?.label }} — {{ type.toUpperCase() }}</div>
+            <div class="card-op-units">Available units: {{ availableUnits.join(', ') }}</div>
+          </div>
+        </div>
+
+        <form (ngSubmit)="submit()" class="calc-form">
+          <!-- Row 1 -->
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">
+                {{ isDual ? 'FIRST VALUE' : 'VALUE' }}
+              </label>
+              <input
+                class="calc-input"
+                type="number"
+                step="any"
+                [(ngModel)]="val1"
+                name="val1"
+                placeholder="0.00"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label class="input-label">
+                {{ operation === 'convert' ? 'FROM UNIT' : 'UNIT' }}
+              </label>
+              <select class="calc-select" [(ngModel)]="unit1" name="unit1">
+                @for (u of availableUnits; track u) {
+                  <option [value]="u">{{ u }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Swap button (convert) -->
+          @if (operation === 'convert') {
+            <div class="swap-row">
+              <div class="swap-line"></div>
+              <button type="button" class="swap-btn" (click)="handleSwap()" title="Swap units">⇅ SWAP</button>
+              <div class="swap-line"></div>
+            </div>
+          }
+
+          <!-- To unit (convert) or second operand (dual) -->
+          @if (operation === 'convert') {
+            <div class="input-row">
+              <div class="input-group" style="visibility: hidden;">
+                <label class="input-label">—</label>
+                <input class="calc-input" disabled />
+              </div>
+              <div class="input-group">
+                <label class="input-label">TO UNIT</label>
+                <select class="calc-select" [(ngModel)]="unit2" name="unit2">
+                  @for (u of availableUnits; track u) {
+                    <option [value]="u">{{ u }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          } @else if (isDual) {
+            <div class="input-row second-row">
+              <div class="op-divider">
+                <span>{{ opInfo?.icon }}</span>
+              </div>
+              <div class="input-group">
+                <label class="input-label">SECOND VALUE</label>
+                <input
+                  class="calc-input"
+                  type="number"
+                  step="any"
+                  [(ngModel)]="val2"
+                  name="val2"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div class="input-group">
+                <label class="input-label">UNIT</label>
+                <select class="calc-select" [(ngModel)]="unit2" name="unit2dual">
+                  @for (u of availableUnits; track u) {
+                    <option [value]="u">{{ u }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          }
+
+          <button
+            type="submit"
+            class="calc-submit"
+            [disabled]="loading"
+            [style.--c]="opColors[operation]"
+          >
+            @if (loading) {
+              <span class="spinner-sm"></span> CALCULATING...
+            } @else {
+              {{ opInfo?.icon }} {{ opInfo?.label }}
+            }
+          </button>
+        </form>
+
+        <!-- Error -->
+        @if (error) {
+          <div class="calc-error">
+            <span>⚠</span>
+            <span>{{ error }}</span>
+          </div>
+        }
+
+        <!-- Result -->
+        @if (result && !result.error) {
+          <div class="result-panel" [style.--c]="opColors[operation]">
+            <div class="result-label">RESULT</div>
+            <div class="result-value">{{ result.resultString }}</div>
+            @if (result.resultValue != null) {
+              <div class="result-numeric">
+                {{ result.resultValue }} {{ result.resultUnit }}
+              </div>
+            }
+            <div class="result-meta">
+              {{ result.thisValue }} {{ result.thisUnit }}
+              @if (result.thatValue) {
+                {{ opInfo?.icon }} {{ result.thatValue }} {{ result.thatUnit }}
+              }
+            </div>
+          </div>
+        }
+
+        @if (result?.error) {
+          <div class="calc-error">
+            <span>⚠</span> {{ result.errorMessage }}
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
